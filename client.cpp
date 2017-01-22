@@ -35,7 +35,7 @@ public:
   TestServClient *d_client;
 
   void call_back(string &_return) {
-    //输出服务器返回信息并把返回计数加1
+    // 输出服务器返回信息并把返回计数加
     cout << "server msg: " << _return << endl;
     pthread_rwlock_wrlock(&m_cnt_recv);
     d_cnt_recv++;
@@ -54,22 +54,23 @@ public:
   }
 
   void asyn_ping(const string &message) {
-    //发送请求
+    // 发送请求
     d_client->send_ping(message);
-    //初始化每个等待回调线程的参数
+    // 初始化每个等待回调线程的参数
     PARG *parg = new PARG;
     parg->pthis = this;
     parg->message = message;
-    //把新生成的线程id放入全局数组维护
+    // 把新生成的线程id放入全局数组维护
     pthread_t m_id;
     m_ids.push_back(m_id);
-    //启动线程，从此只要接受到服务器的返回结果就调用回调函数。
+    // 启动线程，从此只要接受到服务器的返回结果就调用回调函数。
     if (0 != pthread_create(&m_id, NULL, wait_recv,
                             reinterpret_cast<void *>(parg))) {
       return;
     }
   }
 };
+
 int main(int argc, char **argv) {
 
   boost::shared_ptr<TSocket> socket(new TSocket("localhost", 9090));
@@ -84,14 +85,18 @@ int main(int argc, char **argv) {
   client.asyn_ping(message);
 
   while (true) {
-    sleep(1); //这里相当于client去做别的事情了
+    cout << "Client doing ..." << endl;
+    //这里相当于client去做别的事情了
+    sleep(1);
   }
 
   transport->close();
   return 0;
 }
+
 void *wait_recv(void *parg) {
-  PARG *t_parg = reinterpret_cast<PARG *>(parg); //强制转化线程参数
+  //强制转化线程参数
+  PARG *t_parg = reinterpret_cast<PARG *>(parg);
   string _return;
   t_parg->pthis->d_client->recv_ping(_return);
   t_parg->pthis->call_back(_return);
